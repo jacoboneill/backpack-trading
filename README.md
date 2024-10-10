@@ -11,7 +11,8 @@ To do this, I have decided to use modularisation to organise the code and have t
 | `DatabaseConnection`  | Interact with the SQLite database to persist data of the stocks and bank.                                           |
 | `DatabaseInitialiser` | A sublass of `DatabaseConnection` that includes methods to initialise the database. Used as a utility class.        |
 | `StockAPI`            | An adapter class that will abstract the stock api, in this case finance.cs50.io                                     |
-| `Trading Algorithm`   | A stratergy class that will use the bounded knapsack algorithm to calculate the best portfolio at the current time. |
+| `TradingAlgorithm`    | A stratergy class that will use the bounded knapsack algorithm to calculate the best portfolio at the current time. |
+| `Bot`                 | The manager of the project, filled with static methods for the main loop                                            |
 
 These classes will all be used in the `app.py` file to update everything once, and use a cron job to run the program periodically.
 
@@ -26,3 +27,15 @@ I have created a flowchart for the overall program as well as the setup function
 ### Setup
 
 ![Setup](./notes/flowchart_setup.png)
+
+## 10-10-2024 14:24
+
+Created the flowchart for the main section, decided to further abstract it. I'm also adding a class `Bot` to manage all these things and run main
+
+### Main
+
+![Main](./notes/flowchart_main.png)
+
+### Update Stock Data and Weights
+
+![Update Stock Data and Weights](./notes/flowchart_update_stock_data_and_weights.png)
