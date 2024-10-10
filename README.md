@@ -39,3 +39,65 @@ Created the flowchart for the main section, decided to further abstract it. I'm 
 ### Update Stock Data and Weights
 
 ![Update Stock Data and Weights](./notes/flowchart_update_stock_data_and_weights.png)
+
+## 10-10-2024 15:36
+
+After a lot of research and tinkering, I have been able to take an unbounded knapsack algorithm and make it so it will return to me the items that were picked for the heighest value given the budget for weight. The values are a bit the wrong way round as the `PRICE` would be the `weight` column, and the `WEIGHT` would be the `price` column.
+
+### Code
+```py
+def uks_rec(BUDGET, STOCKS, INDEX):
+    if INDEX == 0:
+        count = BUDGET // STOCKS[0]["weight"]
+        return (count * STOCKS[0]["price"], [STOCKS[0]["id"]] * count)
+
+    not_take_val, not_take_items = uks_rec(BUDGET, STOCKS, INDEX - 1)
+
+    take_val = float("-inf")
+    take_items = []
+    if STOCKS[INDEX]["weight"] <= BUDGET:
+        take_val_recursive, take_items_recursive = uks_rec(
+            BUDGET - STOCKS[INDEX]["weight"], STOCKS, INDEX
+        )
+        take_val = STOCKS[INDEX]["price"] + take_val_recursive
+        take_items = [STOCKS[INDEX]["id"]] + take_items_recursive
+
+    if take_val > not_take_val:
+        return (take_val, take_items)
+    else:
+        return (not_take_val, not_take_items)
+
+
+def uks(BUDGET, STOCKS):
+    N = len(STOCKS)
+    return uks_rec(BUDGET, STOCKS, N - 1)
+
+
+if __name__ == "__main__":
+    BUDGET = 100
+    STOCKS = [
+        {
+            "id": 1,
+            "price": 10,
+            "weight": 5,
+        },
+        {
+            "id": 2,
+            "price": 30,
+            "weight": 10,
+        },
+        {
+            "id": 3,
+            "price": 20,
+            "weight": 15,
+        },
+    ]
+    _, selected_items = uks(BUDGET, STOCKS)
+
+    print("Stocks selected: ", selected_items)
+```
+
+### Output
+```
+Stocks selected:  [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+```
