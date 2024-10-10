@@ -19,5 +19,10 @@ These classes will all be used in the `app.py` file to update everything once, a
 
 I have created a flowchart for the overall program as well as the setup function:
 
+### Overview
+
 ![Overview](./notes/flowchart_overview.png)
+
+### Setup
+
 ![Setup](./notes/flowchart_setup.png)
