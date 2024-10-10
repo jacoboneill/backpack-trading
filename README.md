@@ -14,3 +14,10 @@ To do this, I have decided to use modularisation to organise the code and have t
 | `Trading Algorithm`   | A stratergy class that will use the bounded knapsack algorithm to calculate the best portfolio at the current time. |
 
 These classes will all be used in the `app.py` file to update everything once, and use a cron job to run the program periodically.
+
+## 10-10-2024 13:27
+
+I have created a flowchart for the overall program as well as the setup function:
+
+![Overview](./notes/flowchart_overview.png)
+![Setup](./notes/flowchart_setup.png)
