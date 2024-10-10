@@ -101,3 +101,11 @@ if __name__ == "__main__":
 ```
 Stocks selected:  [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 ```
+
+## 10-10-2024 16:05
+
+I have finally added the update_portfolio section to the flow chart. Now I need to design and plan the Classes. I think I want to use UML diagrams for this so I can refer back to it while programming:
+
+### Update Portfolio
+
+![Update Portfolio](./notes/flowchart_update_portfolio.png)
