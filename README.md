@@ -185,3 +185,31 @@ classDiagram
 
     TradingAlgorithm <|-- UnboundedKnapsackAlgorithm
 ```
+
+## 11-10-2024 13:09
+
+After doing some research using: [getting started with pytest (beginner - intermediate) anthony explains #518](https://www.youtube.com/watch?v=mzlH8lp4ISA) I have decided to use _pytest_ as my testing framework and the following file structure:
+```sh
+.
+├── Dockerfile
+├── LICENSE
+├── src
+│   ├── __init__.py
+│   ├── bot.py
+│   ├── database.py
+│   ├── stock_api.py
+│   └── trading_algorithm.py
+└── tests
+    ├── test_bot.py
+    ├── test_database.py
+    ├── test_stock_api.py
+    └── test_trading_algorithm.py
+
+3 directories, 11 files
+```
+
+This will give me a seperation of concerns for each class type. The next step is to setup the venv, which should be pretty easy.
+
+For the venv, you use `python3 -m venv [dir for venv]`. This is pretty simple and then you can use `./bin/activate` to enter into the venv. The only thing I will be adding is the _pytest_ framework by using `pip3 install pytest` while inside the venv.
+
+Once this is done, I will add the classes to implement.
