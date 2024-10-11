@@ -109,3 +109,79 @@ I have finally added the update_portfolio section to the flow chart. Now I need 
 ### Update Portfolio
 
 ![Update Portfolio](./notes/flowchart_update_portfolio.png)
+
+## 11-10-2024 11:21
+
+I have created the UML class diagram with all the methods and attributes as well as the relationships. I wish there was a way to import data from the database and make it all in objects, but I think this will be a waste of compute time in the long run and with python not having type checking, I don't see the point.
+
+```mermaid
+classDiagram
+    class DatabaseConnection{
+        -databaseURI
+        -database
+        -cursor
+        -DatabaseConnection(databaseURI)
+    }
+    class DatabaseInitaliser{
+        -database
+        -bankSchema
+        -stockSchema
+        -transactionsSchema
+        -companyNames
+        +DatabaseInitaliser(databasePath, bankSchemaPath, stockSchemaPath, transactionsSchemaPath, companyNamesPath)
+        -validateDatabase(database)
+        -validateBankTable(bankSchema)
+        -validateStockTable(stockSchema)
+        -validateTransactionsTable(transactionsSchema)
+        -importStockData(companyNames)
+    }
+    class SQLiteInitaliser
+    class Database{
+        +getAllStockData()
+        +updateAllStockData(stockData)
+        +getPortfolio()
+        +getBalance()
+        +updatePortfolio(currentPortfolio, newPortfolio)
+        -addTransaction(stock)
+    }
+    class SQLite
+    class StockAPI{
+        +getStockValue(stockSymbol)$
+        +buyStock(database, stockSymbol, value)$
+        +sellStock(database, stockSymbol, value)$
+    }
+    class CS50StockAPI
+    class TradingAlgorithm{
+        -currentPortfolio
+        -bankBalance
+        -newPortfolio
+        +TradingAlgorithm(currentPortfolio, bankBalance)
+        +execute()
+    }
+    class UnboundedKnapsackAlgorithm
+    class Bot{
+        -database
+        -stockAPI
+        -tradingAlgorithm
+        -inintaliaseDatabase
+        +Bot(database, stockAPI, tradingAlgorithm, initaliseDatabase)
+        -setup()
+        -updateStockData()
+        -getNewPortfolio()
+        -updatePortfolio()
+    }
+
+    Bot o-- SQLiteInitaliser
+    Bot o-- SQLite
+    Bot o-- CS50StockAPI
+    Bot o-- UnboundedKnapsackAlgorithm
+
+    DatabaseConnection <|-- DatabaseInitaliser
+    DatabaseConnection <|-- Database
+    DatabaseInitaliser <|-- SQLiteInitaliser
+    Database <|-- SQLite
+
+    StockAPI <|-- CS50StockAPI
+
+    TradingAlgorithm <|-- UnboundedKnapsackAlgorithm
+```
