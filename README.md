@@ -22,11 +22,11 @@ I have created a flowchart for the overall program as well as the setup function
 
 ### Overview
 
-![Overview](./notes/flowchart_overview.png)
+![Overview](./README_assets/flowchart_overview.png)
 
 ### Setup
 
-![Setup](./notes/flowchart_setup.png)
+![Setup](./README_assets/flowchart_setup.png)
 
 ## 10-10-2024 14:24
 
@@ -34,11 +34,11 @@ Created the flowchart for the main section, decided to further abstract it. I'm 
 
 ### Main
 
-![Main](./notes/flowchart_main.png)
+![Main](./README_assets/flowchart_main.png)
 
 ### Update Stock Data and Weights
 
-![Update Stock Data and Weights](./notes/flowchart_update_stock_data_and_weights.png)
+![Update Stock Data and Weights](./README_assets/flowchart_update_stock_data_and_weights.png)
 
 ## 10-10-2024 15:36
 
@@ -108,7 +108,7 @@ I have finally added the update_portfolio section to the flow chart. Now I need 
 
 ### Update Portfolio
 
-![Update Portfolio](./notes/flowchart_update_portfolio.png)
+![Update Portfolio](./README_assets/flowchart_update_portfolio.png)
 
 ## 11-10-2024 11:21
 
@@ -213,3 +213,15 @@ This will give me a seperation of concerns for each class type. The next step is
 For the venv, you use `python3 -m venv [dir for venv]`. This is pretty simple and then you can use `./bin/activate` to enter into the venv. The only thing I will be adding is the _pytest_ framework by using `pip3 install pytest` while inside the venv.
 
 Once this is done, I will add the classes to implement.
+
+## 11-10-2024 16:09
+
+Been trying to setup testing and classes for the database, but couldn't figure out how to import the classes from `/src` into `/tests`. To solve this I created a `pyproject.toml` file and added the following:
+```toml
+[tool.pytest.ini_options]
+pythonpath = [
+    "src"
+]
+```
+
+Thansk to __hoefling__ on [stack overflow](https://www.stackoverflow.com) for the [answer](https://www.stackoverflow.com/questions/50155464/using-pytest-with-a-src-layer#answer-50156706)
