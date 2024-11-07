@@ -1,7 +1,7 @@
 import calendar
 import requests
 import logging
-import csv
+import sqlite3
 import time
 from datetime import datetime, timedelta
 
@@ -57,8 +57,28 @@ if __name__ == "__main__":
                 for row in res:
                     data.append(parse_data(row, ticker))
 
-    # Write to CSV file
-    with open("./historic_data.csv", "w") as f:
-        dict_writer = csv.DictWriter(f, data[0].keys())
-        dict_writer.writeheader()
-        dict_writer.writerows(data)
+    # Write to database
+    conn = sqlite3.connect("./historic_data.db")
+    cur = conn.cursor()
+    cur.execute("DROP TABLE IF EXISTS stocks;")
+    cur.execute(
+        """
+
+    CREATE TABLE stocks (
+        ticker TEXT NOT NULL,
+        epoch INTEGER NOT NULL,
+        price REAL NOT NULL
+    );
+    """
+    )
+
+    for entry in data:
+        print(entry)
+        cur.execute(
+            "INSERT INTO stocks (ticker, epoch, price) VALUES (:ticker, :epoch, :price)",
+            entry
+        )
+
+    conn.commit()
+    cur.close()
+    conn.close()
