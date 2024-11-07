@@ -225,3 +225,11 @@ pythonpath = [
 ```
 
 Thansk to __hoefling__ on [stack overflow](https://www.stackoverflow.com) for the [answer](https://www.stackoverflow.com/questions/50155464/using-pytest-with-a-src-layer#answer-50156706)
+
+## 07-11-2024 12:33
+
+Wow I haven't looked at this for a while... I have decided to do a quick proof of concept to make sure this idea works on a new branch `feature/proof-of-concept`. This will save me time from doing _ttd_ and actually get a working prototype.
+
+As well as this, I joined a _Python_ discord server and asked them the best way to go about testing with a database. Thanks to their community I think the best way to go about it is to make a test database, but let's not get ahead of ourselves and actully make sure the idea works
+
+
