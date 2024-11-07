@@ -1,4 +1,5 @@
 import requests
+import logging
 import csv
 import time
 from datetime import datetime, timedelta
@@ -9,29 +10,38 @@ def get(ticker):
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:130.0) Gecko/20100101 Firefox/130.0"
     }
     res = requests.get(url, headers=headers)
-    return res.json()["data"]["tradesTable"]["rows"]
     time.sleep(1)
+    if res.json()["status"]["rCode"] != 200:
+        logging.error(f"Request for {ticker} failed with status code {res.json()['status']['rCode']}.")
+        return None
+    else:
+        logging.info(f"Request for {ticker} complete.")
+        return res.json()["data"]["tradesTable"]["rows"]
 
-def parse_data(data):
-    # Convert data to hashmap of date to average price
-    parsed_hashmap = {datetime.strptime(i["date"], "%m/%d/%Y"): (float(i["open"][1:]) + float(i["close"][1:])) / 2 for i in data}
-
-    # Fill data in from 10 years ago to today
-    end = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    start = end - timedelta(days=(3653))
-
-    parsed_data = {start + timedelta(days=i): parsed_hashmap[start + timedelta(days=i)] if start + timedelta(days=i) in parsed_hashmap else None for i in range((end - start).days + 1)}
-    parsed_data["ticker"] = ticker
-
-    return parsed_data
+def parse_data(data, ticker):
+    result = {
+        "ticker": ticker,
+        "datetime": datetime.strptime(data["date"], "%m/%d/%Y"),
+        "price": (float(data["open"][1:]) + float(data["close"][1:])) / 2,
+    }
+    return result
     
 
-data = []
-with open("./companies.csv", "r") as f:
-    ticker = "AAPL"
-    data.append(parse_data(get(ticker)))
+if __name__ == "__main__":
+    # Logging config
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - [%(levelname)s] %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
 
-with open("./historic_data.csv", "w") as f:
-    dict_writer = csv.DictWriter(f, data[0].keys())
-    dict_writer.writeheader()
-    dict_writer.writerows(data)
+    # Scrape data from NASDAQ and parse
+    data = []
+    with open("./companies.csv", "r") as f:
+        for ticker in f.read().splitlines():
+            res = get(ticker)
+            if res != None:
+                for row in res:
+                    data.append(parse_data(row, ticker))
+
+    # Write to CSV file
+    with open("./historic_data.csv", "w") as f:
+        dict_writer = csv.DictWriter(f, data[0].keys())
+        dict_writer.writeheader()
+        dict_writer.writerows(data)
