@@ -1,3 +1,4 @@
+import calendar
 import requests
 import logging
 import csv
@@ -23,11 +24,19 @@ def get(ticker):
 
 
 def parse_data(data, ticker):
+    date = datetime.strptime(data["date"], "%m/%d/%Y")
+    epoch = calendar.timegm(date.timetuple())
+
+    open = float(data["open"][1:])
+    close = float(data["close"][1:])
+    price = (open + close) / 2
+
     result = {
         "ticker": ticker,
-        "datetime": datetime.strptime(data["date"], "%m/%d/%Y"),
-        "price": (float(data["open"][1:]) + float(data["close"][1:])) / 2,
+        "epoch": epoch,
+        "price": price,
     }
+
     return result
 
 
