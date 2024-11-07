@@ -494,3 +494,7 @@ In the meanwhile, I found out that SQLite doesn't support date objects, so inste
 ### References
 [Raw SQL or ORM](https://www.youtube.com/watch?v=x1fCJ7sUXCM)
 [datetime to EPOCH](https://www.geeksforgeeks.org/convert-python-datetime-to-epoch/)
+
+## 07-11-2024 20:51
+
+Final thing of the day, probably... I made it so there was a symlink for the database in the root of the `src` dir. I did this so the output of the file was always in the `scraper` dir. Simply for organisation. Apart from that the scraper seems to be working really well and I think that I have all the data I need to test my theory on!
