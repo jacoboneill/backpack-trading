@@ -73,7 +73,6 @@ if __name__ == "__main__":
     )
 
     for entry in data:
-        print(entry)
         cur.execute(
             "INSERT INTO stocks (ticker, epoch, price) VALUES (:ticker, :epoch, :price)",
             entry
