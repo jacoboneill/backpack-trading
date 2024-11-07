@@ -482,3 +482,15 @@ This showed that all the data was imported with the following schema:
 CREATE TABLE IF NOT EXISTS "stocks"(
 "ticker" TEXT, "datetime" TEXT, "price" TEXT);
 ```
+
+## 07-11-2024 20:32
+
+So I had to go and do some things, which means there was a big break between this update. During this time I did some research on whether I want to use an ORM, specifically SQLAlchemy, or just RAW SQL to interact with the database, and after careful consideration, I decided to just use RAW SQL for at least the POC. I decided this because, to be honest, I already know how to use it, which means I can develop quickly.
+
+My plan is to use SQL, and not Python, to get the weights and then finally compute it in Python. I think this will be good practice for my RAW SQL.
+
+In the meanwhile, I found out that SQLite doesn't support date objects, so instead of creating another script to update the date time objects in the db to epoch, I would add it to the scraper.
+
+### References
+[Raw SQL or ORM](https://www.youtube.com/watch?v=x1fCJ7sUXCM)
+[datetime to EPOCH](https://www.geeksforgeeks.org/convert-python-datetime-to-epoch/)
