@@ -498,3 +498,47 @@ In the meanwhile, I found out that SQLite doesn't support date objects, so inste
 ## 07-11-2024 20:51
 
 Final thing of the day, probably... I made it so there was a symlink for the database in the root of the `src` dir. I did this so the output of the file was always in the `scraper` dir. Simply for organisation. Apart from that the scraper seems to be working really well and I think that I have all the data I need to test my theory on!
+
+## 08-11-2024 16:10
+
+New day, new challenge. I've got all the data so I guess the final solution is to implement the algorithm. I think I want to implement it simmilarly to the plan I have, but instead of saving the bank state, and keeping a history. Originally I was going to load the data in dynamically as this is the biggest dataset I have worked on, however I then realised the database, as it stands, is currently only 12MB, and I have more than enough space in RAM to do that. Therefore, I will be doing:
+
+```py
+cur.execute(sql_query)
+data = cur.fetchall()
+```
+
+instead of the alternative:
+
+```py
+for row in cur.execute(sql_query):
+    ...
+```
+
+For the setup I will need to do the following:
+
+1. Get all the distinct epoch's in an array to loop over: `SELECT DISTINCT s.epoch FROM stocks s;`
+2. Create a dictionary with key values of the ticker and the following schema:
+```
+ticker: {
+    weight: int,
+    transactions: [{
+        price: real,
+        time: int
+    }]
+}
+```
+3. Create a dictionary for the bank, that will include the cash balance, and portfolio value
+4. Fill in the first set of weights as the value normalised, so:
+$$\frac{\text{value} - \min_\text{global}}{\max_\text{global} - \min_\text{global}}$$
+
+For the loop, I will do the following:
+
+1. Loop from the second epoch
+2. Get all values in that epoch with their tickers: `SELECT s.ticker, s.price FROM stocks s WHERE s.epoch = ?`
+3. Get all values from the epoch before with the same query
+3. Get the max and min of the values: `SELECT MAX(s.price), MIN(s.price) FROM stocks s WHERE s.epoch = ?`
+4. Loop through all the tickers to get their weights with the following: 
+$$\frac{(\text{value}_i - \text{value}_{i-1}) - \min_\text{global}}{\max_\text{global} - \min_\text{global}}$$
+5. Use the knapsack algorithm to decide which stocks to have in the portfolio, with a range of percentages for the budget
+6. Update the bank with the current values, buy and sell stocks where needed and update cash
