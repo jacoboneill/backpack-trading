@@ -15,19 +15,25 @@ class TradingAlgorithm:
         self.budget = trading_account.budget
 
     def _calculateWeights(self, new_prices):
+        new_prices = dict(new_prices)
+        normalised_weights_stocks = list()
         for stock in self.stocks:
             data = {
                 "ticker": stock["ticker"],
                 "prev": stock["current"],
-                "weight": None,
                 "normalised_weight": None,
             }
+
             if stock["ticker"] in new_prices:
                 data["current"] = new_prices[stock["ticker"]]
             else:
                 data["current"] = data["prev"]
 
-            stock = data
+            data["weight"] = (data["current"] - data["prev"]) / 2
+
+            normalised_weights_stocks.append(data)
+
+        self.stocks = normalised_weights_stocks
 
     def _getMaxMin(self):
         max = 0
@@ -128,6 +134,7 @@ class Portfolio(UserDict):
         self._value = None
 
     def updateAllStocks(self, new_prices):
+        new_prices = dict(new_prices)
         for stock in self.data:
             self.updateStock(stock, new_prices[stock])
 
@@ -195,7 +202,8 @@ class Account:
 
 if __name__ == "__main__":
     # Get access to data
-    api = API("../historic_data.db")
+    # api = API("../historic_data.db")
+    api = API("../test.db")
 
     # Initalise timestamps
     timestamps = api.getTimestamps()
@@ -212,7 +220,7 @@ if __name__ == "__main__":
 
             # Update all stocks in portfolio and run trading algorithm
             new_stocks = api.getStocks(timestamp)
-            optimal_portfolio = trading_algorithm.unboundedKnapsack(new_prices, account.budget)
+            optimal_portfolio = trading_algorithm.unboundedKnapsack(new_stocks)
             
             # Update portfolio with new optimal portfolio
             account.portfolio.updatePortfolioWithTemplate(optimal_portfolio)
