@@ -16,7 +16,7 @@ class TradingAlgorithm:
 
     def _calculateWeights(self, new_prices):
         new_prices = dict(new_prices)
-        normalised_weights_stocks = list()
+        weighted_stocks = list()
         for stock in self.stocks:
             data = {
                 "ticker": stock["ticker"],
@@ -31,13 +31,13 @@ class TradingAlgorithm:
 
             data["weight"] = (data["current"] - data["prev"]) / 2
 
-            normalised_weights_stocks.append(data)
+            weighted_stocks.append(data)
 
-        self.stocks = normalised_weights_stocks
+        self.stocks = weighted_stocks
 
     def _getMaxMin(self):
-        max = 0
-        min = 0
+        max = float("-inf")
+        min = float("inf")
         for stock in self.stocks:
             if stock["weight"] > max:
                 max = stock["weight"]
@@ -59,9 +59,9 @@ class TradingAlgorithm:
     def _unboundedKnapsackRecurs(self, i):
         if i == 0:
             count = self.budget // self.stocks[0]["weight"]
-            return (count * self.stocks[0]["price"], [self.stocks[0]["ticker"]] * count)
+            return (count * self.stocks[0]["current"], [self.stocks[0]["ticker"]] * count)
 
-        not_take_val, not_take_items = self._unboundedKnapsackRecurs(self.budget, i - 1)
+        not_take_val, not_take_items = self._unboundedKnapsackRecurs(i - 1)
 
         take_val = float("-inf")
         take_items = list()
@@ -70,7 +70,7 @@ class TradingAlgorithm:
             take_val_recurs, take_items_recurs = self._unboundedKnapsackRecurs(
                 self.budget - self.stocks[i]["weight"], i
             )
-            take_val = self.stocks[i]["price"] + take_val_recurs
+            take_val = self.stocks[i]["current"] + take_val_recurs
             take_items = [self.stocks[i]["ticker"]] + take_items_recurs
 
             if take_val > not_take_val:
@@ -92,7 +92,7 @@ class TradingAlgorithm:
         self._updateStocks(new_prices)
 
         n = len(self.stocks)
-        value, items = _unboundedKnapsackRecurs(self.budget, n - 1)
+        value, items = self._unboundedKnapsackRecurs(n - 1)
         return _cleanKnapsackValues(items)
 
 
