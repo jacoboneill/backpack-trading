@@ -49,34 +49,12 @@ class TradingAlgorithm:
     def _normaliseWeights(self):
         max, min = self._getMaxMin()
         for stock in self.stocks:
-            stock["normalised_weight"] = (stock["weight"] - min) / (max - min)
+            stock["normalised_weight"] = ((stock["weight"] - min) / (max - min)) + 1
 
     def _updateStocks(self, new_prices):
         self._calculateWeights(new_prices)
         self._normaliseWeights()
         self.portfolio.updateAllStocks(new_prices)
-
-    def _unboundedKnapsackRecurs(self, i):
-        if i == 0:
-            count = self.budget // self.stocks[0]["weight"]
-            return (count * self.stocks[0]["current"], [self.stocks[0]["ticker"]] * count)
-
-        not_take_val, not_take_items = self._unboundedKnapsackRecurs(i - 1)
-
-        take_val = float("-inf")
-        take_items = list()
-
-        if self.stocks[i]["weight"] <= self.budget:
-            take_val_recurs, take_items_recurs = self._unboundedKnapsackRecurs(
-                self.budget - self.stocks[i]["weight"], i
-            )
-            take_val = self.stocks[i]["current"] + take_val_recurs
-            take_items = [self.stocks[i]["ticker"]] + take_items_recurs
-
-            if take_val > not_take_val:
-                return (take_val, take_items)
-            else:
-                return (not_take_val, not_take_items)
 
     def _cleanKnapsackValues(self, knapsack_stocks):
         portfolio = dict()
@@ -88,11 +66,33 @@ class TradingAlgorithm:
 
         return portfolio
 
+    def _unboundedKnapsackRecurs(self, budget, i):
+        if i == 0:
+            count = int(budget // self.stocks[0]["normalised_weight"])
+            return (count * self.stocks[0]["current"], [self.stocks[0]["ticker"]] * count)
+
+        not_take_val, not_take_items = self._unboundedKnapsackRecurs(budget, i - 1)
+
+        take_val = float("-inf")
+        take_items = list()
+
+        if self.stocks[i]["normalised_weight"] <= budget:
+            take_val_recurs, take_items_recurs = self._unboundedKnapsackRecurs(budget - self.stocks[i]["normalised_weight"], i -1)
+            take_val = self.stocks[i]["current"] + take_val_recurs
+            take_items = [self.stocks[i]["ticker"]] + take_items_recurs
+
+            if take_val > not_take_val:
+                return (take_val, take_items)
+            else:
+                return (not_take_val, not_take_items)
+
     def unboundedKnapsack(self, new_prices):
         self._updateStocks(new_prices)
 
         n = len(self.stocks)
-        value, items = self._unboundedKnapsackRecurs(n - 1)
+        import json
+        print(json.dumps(self.stocks, indent=1))
+        value, items = self._unboundedKnapsackRecurs(n - 1, self.budget)
         return _cleanKnapsackValues(items)
 
 
