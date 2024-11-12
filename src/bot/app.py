@@ -100,12 +100,12 @@ class API:
 
     def getTimestamps(self):
         self.cur.execute("SELECT DISTINCT s.epoch FROM stocks s;")
-        timestamps = [i["epoch"] for i in self.cur.fetchall]
+        timestamps = [i["epoch"] for i in self.cur.fetchall()]
         return timestamps
 
     def getStocks(self, timestamp):
         self.cur.execute(
-            "SELECT s.ticker, s.price FROM stocks s WHERE s.epoch = ?", timestamp
+            "SELECT s.ticker, s.price FROM stocks s WHERE s.epoch = ?", (timestamp,)
         )
         return self.cur.fetchall()
 
