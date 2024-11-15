@@ -716,3 +716,52 @@ no memo: 3.719251871109009
 ```
 
 As you can see, the memoisation function runs almost **22** times faster!
+
+## 15-11-2024 18:36
+
+I finally did number 2:
+
+> [x] Introduction to Greedy Algorithms & Problem Solving Patterns
+
+And followed [this](https://www.youtube.com/watch?v=lfQvPHGtu6Q) video, and used what I learned to solve the fractional knapsack problem. After many attempts where I failed to figure out how to loop and have the last value be added fractionally, I looked up the solution. However, I understand how all of this works:
+
+```py
+def fractional_knapsack(capacity: int, items: list[dict[str, int | float]]) -> dict[str, int]:
+    for item in items:
+        item["ratio"] = item["value"] / item["size"]
+
+    items.sort(key=lambda i: i["ratio"], reverse=True)
+
+    bag = list()
+    total_value = 0
+    current_weight = 0
+    for item in items:
+        if current_weight + item["size"] <= capacity:
+            total_value += item["value"]
+            bag.append(item)
+            current_weight += item["size"]
+        else:
+            fraction = (capacity - current_weight) / item["size"]
+            value = item["value"] * fraction
+            total_value += value
+            bag.append({"index": item["index"], "size": fraction, "value": value})
+            break
+
+    return {"value": total_value, "items": bag}
+
+
+if __name__ == "__main__":
+
+    capacity = 25
+    items = [
+        {"index": 0, "size": 22, "value": 19},
+        {"index": 1, "size": 10, "value": 9},
+        {"index": 2, "size": 9, "value": 9},
+        {"index": 3, "size": 7, "value": 6},
+    ]
+
+    print(fractional_knapsack(capacity, items))
+
+```
+
+I learnt a lot while making this, most notably however the `list.sort(key=)` keyword parameter, as well as `lambda` functions. This made it much easier to sort it all, instead of using the solutions way of using a set and memorising the way the set is laid out.
