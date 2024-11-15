@@ -522,13 +522,33 @@ For the setup I will need to do the following:
 ```
 ticker: {
     weight: int,
-    transactions: [{
-        price: real,
-        time: int
-    }]
+    transactions: [
+        {
+            price: real,
+            time: int
+        },
+        ...
+    ]
 }
 ```
-3. Create a dictionary for the bank, that will include the cash balance, and portfolio value
+3. Create a dictionary for the bank, that will include the cash balance, and portfolio value:
+```
+bank = [
+    {
+        cash: real,
+        budget: int
+        portfolio: [
+            {
+            ticker: string,
+            price: real,
+            time: real,
+            },
+            ...
+        ]
+    },
+    ...
+]
+```
 4. Fill in the first set of weights as the value normalised, so:
 $$\frac{\text{value} - \min_\text{global}}{\max_\text{global} - \min_\text{global}}$$
 
@@ -542,3 +562,157 @@ For the loop, I will do the following:
 $$\frac{(\text{value}_i - \text{value}_{i-1}) - \min_\text{global}}{\max_\text{global} - \min_\text{global}}$$
 5. Use the knapsack algorithm to decide which stocks to have in the portfolio, with a range of percentages for the budget
 6. Update the bank with the current values, buy and sell stocks where needed and update cash
+
+## 10-11-2024 12:22
+
+Back again, I have decided against this idea, instead taking a more OOP plan as I am getting cofused on what I am doing. Therefore I will have the following:
+
+
+### Bot
+- A utility class with static methods only, and no state. A manager if you will
+    - Get current stocks from `API`
+    - Calculate optimum portfolio
+    - Request update to `Account`
+    - Have it's own dict with `ticker` as key, and: `previous price`, `new_price`, and `weight` as a dict:
+    ```
+    {
+        previous_price: real,
+        new_price: real,
+        weight: real
+    }
+    ```
+
+### Bank
+- An aggregator of Accounts, which has `CRUD` functionality for `Account`'s
+```
+bank = list(Account)
+```
+
+#### Account
+- A dict with `cash`, `budget`, a `Portfolio` object, and a `History` object
+```
+account = {
+    cash: real,
+    budget: real,
+    portfolio: Portfolio,
+    history: History
+}
+```
+
+##### Portfolio
+- A dict with key value pairs of a `ticker` and a dict with `price`, `quantity`, and epoch `timestamp`
+```
+{
+    price: real,
+    quantity: int,
+    timestamp: int
+}
+```
+
+##### History
+- A list with dicts of `ticker`, `price`, `quantity`, and epoch `timestamp`
+```
+{
+    ticker: string,
+    price: real,
+    quantity: int,
+    timestamp: int
+}
+```
+
+### API
+- A utility class that allows access to the database
+- Get next timestamp from current using `SQL`
+- Get stocks at timestamp
+- Get max and min price from timestamp
+
+## 15-11-2024 09:18
+
+So I tried to implement all the classes above, and many of them worked, with a few adjustments of course, but the main issue I am having is that the call stack allocation is being exceeded. I'm not entireley suprised by this, even with memoisation the amount of different branches is going to exceed Python's recurssion limit:
+
+```
+sys.setrecursionlimit(limit)
+
+Set the maximum depth of the Python interpreter stack to limit. This limit prevents infinite recursion from causing an overflow of the C stack and crashing Python.
+
+The highest possible limit is platform-dependent. A user may need to set the limit higher when they have a program that requires deep recursion and a platform that supports a higher limit. This should be done with care, because a too-high limit can lead to a crash.
+
+If the new limit is too low at the current recursion depth, a RecursionError exception is raised.
+
+Changed in version 3.5.1: A RecursionError exception is now raised if the new limit is too low at the current recursion depth.
+```
+
+Therefore, I am having to take a little side quest into algorithms, to understand the dynamic programming approach. I used ChatGPT to generate a curriculum for me, and have been watching YouTube content on the subjects and then doing programming challenges based on what I have learned. Here is what I have so far:
+
+1. [x] Develop Understanding of Recursion
+2. [ ] Introduction to Greedy Algorithms & Problem Solving Patterns
+3. [ ] Introduction to Dynamic Programming Concepts 
+4. [ ] Mastering 0/1 Knapsack as Preparation for Unbounded Knapsack
+5. [ ] Learn and Implement the Unbounded Knapsack Solution
+
+For 1, I learned how recurssion can work using CS50's short on it, with the challenege of writing a recurssive function to show the collatz conjecture.
+
+```py
+def collatz(n, steps=0):
+    if n < 1 or n % 1 != 0:
+        raise TypeError(f"n must be a positive integer: {n}")
+
+    if n == 1:
+        return steps
+
+    if n % 2 == 0:
+        return collatz(n / 2, steps=steps + 1)
+
+    if n % 2 != 0:
+        return collatz((3 * n) + 1, steps=steps + 1)
+```
+
+I then went further, by creating a second function to incorporate memoisation, with the help of another YouTube video
+
+```py
+def collatzMemo(n, memo=dict(), steps=0):
+    if n < 1 or n % 1 != 0:
+        raise TypeError(f"n must be a positive integer: {n}")
+
+    if n == 1:
+        return steps
+
+    if n in memo:
+        return steps + memo[n]
+
+    if n % 2 == 0:
+        result = collatzMemo(n / 2, memo=memo, steps=steps + 1)
+
+    if n % 2 != 0:
+        result = collatzMemo((3 * n) + 1, memo=memo, steps=steps + 1)
+
+    memo[n] = result - steps
+    return result
+```
+
+Finally, I wrote a test function to time how long the function takes, given a range of values:
+```py
+def test(func, repeats):
+    start = time.time()
+    for i in range(1, repeats):
+        func(i)
+    return time.time() - start
+```
+
+and ran it in a `if main` clause:
+```py
+if __name__ == "__main__":
+    n = 100_000
+
+    print(f"no memo: {test(collatz, n)}")
+
+    print(f"   memo: {test(collatzMemo, n)}")
+```
+
+This was the result:
+```stdout
+no memo: 3.719251871109009
+   memo: 0.17868900299072266
+```
+
+As you can see, the memoisation function runs almost **22** times faster!
