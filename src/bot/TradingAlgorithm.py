@@ -1,24 +1,6 @@
-from __future__ import annotations
+from Portfolio import Portfolio
+from Stock import Stock
 from typing import Union
-
-
-class Stock:
-    def __init__(self, ticker: str, price: float) -> None:
-        self.ticker: str = ticker
-        self.price: float = price
-
-    def __repr__(self) -> dict[str, Union[str, float]]:
-        return repr(self.__dict__)
-
-
-class PortfolioStock(Stock):
-    def __init__(self, ticker: str, price: float, quantity: int = 1) -> None:
-        super().__init__(ticker, price)
-        self.quantity: int = quantity
-
-    def __repr__(self) -> dict[str, Union[str, float, int]]:
-        return repr(self.__dict__)
-
 
 class TradingAlgorithmStock:
     def __init__(self, ticker: str, price: float) -> None:
@@ -31,100 +13,6 @@ class TradingAlgorithmStock:
 
     def __repr__(self) -> dict[str, Union[str, float, None]]:
         return repr(self.__dict__)
-
-
-class StockNotFoundError(Exception):
-    def __init__(self, message) -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class Portfolio:
-    def __init__(self, stocks: list[Stock]) -> None:
-        self.stocks: dict = {}
-
-        for stock in stocks:
-            self.addStock(stock)
-
-        self.value: float = self._calculateValue()
-
-    def _calculateValue(self) -> float:
-        value = 0
-        for stock in self.stocks.values():
-            value += stock.price * stock.quantity
-
-        return value
-
-    def addStock(self, stock: Stock, quantity: int = 1) -> None:
-        if stock.ticker in self.stocks:
-            quantity: int = self.stocks[stock.ticker].quantity + quantity
-        else:
-            quantity: int = quantity
-
-        self.stocks[stock.ticker] = PortfolioStock(
-            stock.ticker, stock.price, quantity=quantity
-        )
-
-    def removeStock(self, stock: Stock, quantity: int = -1) -> None:
-        old_stock_quantity = self.stocks[stock.ticker].quantity
-
-        if stock.ticker in self.stocks:
-            if old_stock_quantity + quantity >= 1:
-                old_stock_quantity -= quantity
-            elif old_stock_quantity + quantity == 0:
-                self.stocks.pop(stock.ticker)
-            else:
-                raise StockNotFoundError(
-                    f"Stock with ticker: {stock.ticker} was removed too many times."
-                )
-        else:
-            raise StockNotFoundError(
-                f"Stock with ticker: {stock.ticker} not found in portfolio. Could not remove."
-            )
-
-    def updateStock(self, new_stock: Stock) -> None:
-        if new_stock.ticker not in self.stocks:
-            raise StockNotFoundError(
-                f"Unable to update stock: {new_stock.ticker} until added."
-            )
-
-        self.stocks[new_stock.ticker] = PortfolioStock(
-            new_stock.ticker,
-            new_stock.price,
-            quantity=self.stocks[new_stock.ticker].quantity,
-        )
-
-    def updateStocks(self, new_stocks: dict[str, Stock]) -> None:
-        for ticker, stock in new_stocks.items():
-            if ticker not in self.stocks:
-                self.addStock(stock)
-            else:
-                self.updateStock(stock)
-
-    def _updatePortfolio(self, new_portfolio: Portfolio) -> None:
-        new_stocks = new_portfolio.stocks
-
-        for ticker, old_stock in dict(self.stocks).items():
-            if ticker in new_stocks:
-                new_stock = new_stocks[old_stock.ticker]
-                quantity = new_stock.quantity - old_stock.quantity
-            else:
-                quantity = 0 - old_stock.quantity
-
-            if quantity > 0:
-                self.addStock(new_stock, quantity=quantity)
-            if quantity < 0:
-                self.removeStock(old_stock, quantity=quantity)
-
-        self.value = self._calculateValue()
-
-    def __repr__(self):
-        return f"Value: {self.value}\n" + "\n".join(
-            [
-                f"- {stock.ticker} x {stock.quantity} @ ${stock.price}"
-                for stock in self.stocks.values()
-            ]
-        )
 
 
 class TradingAccount:
