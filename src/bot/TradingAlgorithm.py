@@ -25,7 +25,6 @@ class TradingAlgorithm:
         ]
 
         self.account = trading_account
-        self.portfolio = trading_account.portfolio
         self.budget = trading_account.budget
 
     def _generateWeights(self, new_stocks: dict[str, Stock]) -> tuple[float, float]:
@@ -76,25 +75,32 @@ class TradingAlgorithm:
             bought_stocks.append(self.stocks[stock_index])
             remaining_scaled_budget -= self.stocks[stock_index].scaled_price
 
-        new_portfolio = Portfolio(
-            Stock(stock.ticker, stock.current_price) for stock in bought_stocks
-        )
+        new_stocks: dict[str, list[Stock, int]] = {}
+        for stock in bought_stocks:
+            if stock.ticker not in new_stocks:
+                new_stocks[stock.ticker] = [Stock(stock.ticker, stock.current_price), 1]
+            else:
+                new_stocks[stock.ticker][1] += 1
+
+        new_portfolio = Portfolio([])
+        for stock in new_stocks.values():
+            new_portfolio.addStock(stock[0], quantity=stock[1])
+
         return new_portfolio
 
     def run(self, new_stocks: dict[str, Stock]):
-        self.portfolio.updateStocks(new_stocks)
+        self.account.portfolio.updateStocks(new_stocks)
         self._generateWeights(new_stocks)
         self._normaliseWeights()
         self._scalePrices()
 
         optimal_portfolio = self._unboundedKnapsack()
-        self.portfolio._updatePortfolio(
-            optimal_portfolio
-        )  # TODO Update to self.account.updatePortfolio and update account balances
+        self.account.updateAccount(optimal_portfolio)
 
 
 if __name__ == "__main__":
-    portfolio: Portfolio = Portfolio([Stock("ENB", 41.075), Stock("WMT", 83.18)])
+    stocks: list[Stock] = [Stock("ENB", 41.075), Stock("WMT", 83.18)]
+    portfolio: Portfolio = Portfolio(stocks)
     account: Account = Account(10_000, 0.1, portfolio)
     new_stocks: dict[str, Stock] = {
         "ENB": Stock("ENB", 41.44),
