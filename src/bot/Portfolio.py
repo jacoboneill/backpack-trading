@@ -1,6 +1,7 @@
 from __future__ import annotations
 from Stock import Stock
 
+
 class PortfolioStock(Stock):
     def __init__(self, ticker: str, price: float, quantity: int) -> None:
         super().__init__(ticker, price)
@@ -31,7 +32,9 @@ class Portfolio:
 
     def addStock(self, stock: Stock, quantity: int = 1) -> None:
         if quantity < 1:
-            raise ValueError(f"Quantity must be above or equal to 1, {quantity} was given.")
+            raise ValueError(
+                f"Quantity must be above or equal to 1, {quantity} was given."
+            )
 
         if not isinstance(quantity, int):
             raise ValueError(f"Quantity must be of type int, {quantity} was given")
@@ -58,10 +61,13 @@ class Portfolio:
             elif new_quantity == 0:
                 self.stocks.pop(stock.ticker)
             else:
-                raise StockNotFoundError(f"Request to remove {stock.ticker} {-quantity} times was not completed. {self.stocks[stock.ticker].quantity} stocks left in Portfolio.")
+                raise StockNotFoundError(
+                    f"Request to remove {stock.ticker} {-quantity} times was not completed. {self.stocks[stock.ticker].quantity} stocks left in Portfolio."
+                )
         else:
-            raise StockNotFoundError(f"Request to remove {stock.ticker} was not completed. Was not found in Portfolio.")
-
+            raise StockNotFoundError(
+                f"Request to remove {stock.ticker} was not completed. Was not found in Portfolio."
+            )
 
     def updateStock(self, new_stock: Stock) -> None:
         if new_stock.ticker not in self.stocks:
@@ -70,7 +76,7 @@ class Portfolio:
             self.stocks[new_stock.ticker] = PortfolioStock(
                 new_stock.ticker,
                 new_stock.price,
-                quantity=self.stocks[new_stock.ticker].quantity
+                quantity=self.stocks[new_stock.ticker].quantity,
             )
 
     def updateStocks(self, new_stocks: dict[str, Stock]) -> None:
@@ -98,7 +104,7 @@ class Portfolio:
         self.value = self._calculateValue()
 
     def __repr__(self):
-        return f"Value: ${round(self.value, 2)}\n" + "\n".join(
+        return "\n".join(
             [
                 f"- {stock.ticker} x {stock.quantity} @ ${stock.price}"
                 for stock in self.stocks.values()
