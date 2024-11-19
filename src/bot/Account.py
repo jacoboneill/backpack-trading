@@ -1,48 +1,33 @@
+from Portfolio import Portfolio
+
+
 class Account:
-    def __init__(self, cash, budget_allocation, portfolio):
-        self.initial_balance = cash
-        self.cash = cash
-        self.budget_allocation = budget_allocation
-        self._generate_budget()
-        self.portfolio = portfolio
+    def __init__(
+        self, initial_balance: float, budget_percentage: float, portfolio: Portfolio
+    ):
+        if initial_balance < 0:
+            raise ValueError(
+                f"initial_balance must be above 0, {initial_balance} was given."
+            )
 
-    def _generate_budget(self):
-        self.budget = self.cash * self.budget_allocation
+        if budget_percentage < 0 or budget_percentage > 1:
+            raise ValueError(
+                f"budget percentage must be between 0 and one, {budget_percentage} was given."
+            )
 
-    def _deposit(self, cash):
-        self.cash += cash
-        self._generate_budget()
+        self.balance: float = initial_balance
+        self.budget_percentage: float = budget_percentage
+        self.budget: float = self._calculateBudget()
+        self.portfolio: Portfolio = portfolio
 
-    def _withdraw(self, cash):
-        if self.cash - cash < 0:
-            raise Exception(f"Trying to withdraw {cash} out of balance: {self.cash}")
+    def _calculateBudget(self) -> float:
+        return self.balance * self.budget_percentage
 
-        self.cash -= cash
-        self._generate_budget()
-
-    def sellStock(self, stock, quantity):
-        sell_price = quantity * self.portfolio[stock]["price"]
-        self.portfolio[stock]["quantity"] -= quantity
-        self._deposit(sell_price)
-
-    def buyStock(self, stock, quantity):
-        buy_price = quantity * self.portfolio[stock]["price"]
-        self.portfolio[stock]["quantity"] += quantity
-        self._withdraw(buy_price)
-
-    def updatePortfolioWithTemplate(self, template):
-        for portfolio in self.portfolio:
-            portfolio_quantity = portfolio["quantity"]
-
-            if portfolio in template:
-                template_quantity = template["quantity"]
-
-                if portfolio_quantity > template_quantity:
-                    self.sellStock(portfolio, portfolio_quantity - template_quantity)
-                elif portfolio_quantity < template_quantity:
-                    self.buyStock(portfolio, template_quantity - portfolio_quantity)
-            elif portfolio_quantity > 0:
-                self.sellStock(portfolio, portfolio_quantity)
-
-    def value(self):
-        return (self.cash + self.portfolio.value()) - self.initial_balance
+    def __repr__(self):
+        portfolio_items = "\n".join(
+            f"\t\t{item}" for item in repr(self.portfolio).split("\n")
+        )
+        return f"""Account:\n\
+        Balance  : ${self.balance}\n\
+        Budget   : ${self.budget}\n\
+        Portfolio: ${self.portfolio.value}\n{portfolio_items}"""

@@ -1,6 +1,8 @@
 from Portfolio import Portfolio
 from Stock import Stock
+from Account import Account
 from typing import Union
+
 
 class TradingAlgorithmStock:
     def __init__(self, ticker: str, price: float) -> None:
@@ -15,12 +17,6 @@ class TradingAlgorithmStock:
         return repr(self.__dict__)
 
 
-class TradingAccount:
-    def __init__(self, portfolio: Portfolio, budget: float) -> None:
-        self.portfolio = portfolio
-        self.budget = budget
-
-
 class TradingAlgorithm:
     def __init__(self, trading_account) -> None:
         self.stocks = [
@@ -28,6 +24,7 @@ class TradingAlgorithm:
             for stock in trading_account.portfolio.stocks.values()
         ]
 
+        self.account = trading_account
         self.portfolio = trading_account.portfolio
         self.budget = trading_account.budget
 
@@ -53,7 +50,7 @@ class TradingAlgorithm:
         )
         self.scale: int = pow(10, max_digits)
 
-        self.scaled_budget: float = self.budget * self.scale
+        self.scaled_budget: int = int(self.budget * self.scale)
 
         for stock in self.stocks:
             stock.scaled_price = int(stock.current_price * self.scale)
@@ -91,20 +88,21 @@ class TradingAlgorithm:
         self._scalePrices()
 
         optimal_portfolio = self._unboundedKnapsack()
-        self.portfolio._updatePortfolio(optimal_portfolio)
+        self.portfolio._updatePortfolio(
+            optimal_portfolio
+        )  # TODO Update to self.account.updatePortfolio and update account balances
 
 
 if __name__ == "__main__":
-    account: TradingAccount = TradingAccount(
-        Portfolio([Stock("ENB", 41.075), Stock("WMT", 83.18)]), 10_000
-    )
+    portfolio: Portfolio = Portfolio([Stock("ENB", 41.075), Stock("WMT", 83.18)])
+    account: Account = Account(10_000, 0.1, portfolio)
     new_stocks: dict[str, Stock] = {
         "ENB": Stock("ENB", 41.44),
         "WMT": Stock("WMT", 84.29),
     }
 
-    print(account.portfolio)
+    print(account)
     trading_algorithm: TradingAlgorithm = TradingAlgorithm(account)
     trading_algorithm.run(new_stocks)
     print()
-    print(trading_algorithm.portfolio)
+    print(trading_algorithm.account)
