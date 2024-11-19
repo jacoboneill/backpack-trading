@@ -1,4 +1,5 @@
-from Portfolio import Portfolio
+from Portfolio import Portfolio, PortfolioStock
+from TradingAlgorithm import TradingAlgorithm
 from Stock import Stock
 
 
@@ -9,9 +10,7 @@ class InsufficientFundsError(Exception):
 
 
 class Account:
-    def __init__(
-        self, initial_balance: float, budget_percentage: float, portfolio: Portfolio
-    ):
+    def __init__(self, initial_balance: float, budget_percentage: float):
         if initial_balance < 0:
             raise ValueError(
                 f"initial_balance must be above 0, {initial_balance} was given."
@@ -25,39 +24,61 @@ class Account:
         self.balance: float = initial_balance
         self.budget_percentage: float = budget_percentage
         self.budget: float = self._calculateBudget()
-        self.portfolio: Portfolio = portfolio
+        self.portfolio: Portfolio = Portfolio()
+
+    def update(self, new_stocks: Portfolio):
+        self._updateStockHistory(new_stocks)
+        optimal_portfolio: Portfolio = self._runAlgorithm()
+        self._rebalanceAccount(optimal_portfolio)
 
     def _calculateBudget(self) -> float:
         return self.balance * self.budget_percentage
 
-    def updateAccount(self, new_portfolio: Portfolio):
-        new_stocks = new_portfolio.stocks
+    def _updateStockHistory(self, new_stocks: Portfolio) -> None:
+        if not hasattr(self, "new_stocks"):
+            self.old_stocks: Portfolio = new_stocks
+        else:
+            self.old_stocks: Portfolio = self.new_stocks
 
-        buy_queue = list()
-        sell_queue = list()
+        self.new_stocks = new_stocks
+
+    def _runAlgorithm(self) -> Portfolio:
+        return TradingAlgorithm(self.old_stocks, self.new_stocks).getOptimalPortfolio()
+
+    def _rebalanceAccount(self, portfolio_template: Portfolio) -> None:
+        template: dict[str, PortfolioStock] = portfolio_template.stocks
+        buy_queue: list = []
+        sell_queue: list = []
 
         for ticker, old_stock in self.portfolio.stocks.items():
-            if ticker in new_stocks:
-                new_stock = new_stocks[old_stock.ticker]
-                quantity = new_stock.quantity - old_stock.quantity
+            template_stock = template.get(
+                ticker,
+                PortfolioStock(
+                    ticker,
+                ),
+            )
+            if ticker in template:
+                quantity: int = template[ticker].quantity - old_stock.quantity
+                stock: Stock = Stock(ticker, template[ticker].price)
             else:
-                quantity = 0 - old_stock.quantity
+                quantity: int = -old_stock.quantity
+                stock: Stock = Stock(ticker, old_stock.price)
 
             if quantity > 0:
-                buy_queue.append((new_stock, quantity))
+                buy_queue.append((stock, quantity))
             if quantity < 0:
-                sell_queue.append((old_stock, quantity))
+                sell_queue.append((stock, quantity))
 
         for stock, quantity in sell_queue:
-            self.sellStock(stock, quantity)
+            self._sellStocks(stock, quantity)
 
         for stock, quantity in buy_queue:
-            self.buyStock(stock, quantity)
+            self._buyStocks(stock, quantity)
 
         self.budget = self._calculateBudget()
         self.portfolio.value = self.portfolio._calculateValue()
 
-    def buyStock(self, stock: Stock, quantity: int = 1):
+    def _buyStocks(self, stock: Stock, quantity: int = 1):
         if not isinstance(quantity, int):
             raise ValueError(f"quantity must be of type int, {type(quantity)} given.")
 
@@ -75,7 +96,7 @@ class Account:
         self.balance -= request_price
         self.portfolio.addStock(stock, quantity=quantity)
 
-    def sellStock(self, stock: Stock, quantity: int = -1) -> None:
+    def _sellStocks(self, stock: Stock, quantity: int = -1) -> None:
         if not isinstance(quantity, int):
             raise ValueError(f"quantity must be of type int, {type(quantity)} given.")
 

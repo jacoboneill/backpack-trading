@@ -4,6 +4,9 @@ from Stock import Stock
 
 class PortfolioStock(Stock):
     def __init__(self, ticker: str, price: float, quantity: int) -> None:
+        if quantity < 1:
+            raise ValueError(f"quantity must be above one, {quantity} was given.")
+
         super().__init__(ticker, price)
         self.quantity: int = quantity
 
@@ -15,12 +18,9 @@ class StockNotFoundError(Exception):
 
 
 class Portfolio:
-    def __init__(self, stocks: list[Stock]) -> None:
-        self.stocks: dict = {}
+    def __init__(self) -> None:
+        self.stocks: dict[str, PortfolioStock] = {}
         self.value: float = 0
-
-        for stock in stocks:
-            self.addStock(stock)
 
         self.value = self._calculateValue()
 
