@@ -1,6 +1,6 @@
 from typing import Union
-from Stock import Stock
-from Portfolio import Portfolio
+from stock import Stock
+from portfolio import Portfolio
 
 
 class TradingAlgorithmStock(Stock):
@@ -38,18 +38,18 @@ class TradingAlgorithm:
 
         raw_weight = self._calculateRawWeight(old_stock.price, new_stock.price)
         self.stocks.append(
-            TradingAlgorithmStock(ticker, old_price, new_price, raw_weight)
+            TradingAlgorithmStock(old_stock.ticker, old_stock.price, new_stock.price, raw_weight)
         )
 
     def _calculateRawWeight(self, old_price, new_price) -> float:
         return (new_price - old_price) / 2
 
     def _calculateRawWeightMaxMin(self) -> tuple[float, float]:
-        generator = (stock.raw_weight for stock in self.stocks)
+        generator = [stock.raw_weight for stock in self.stocks]
         return (max(generator), min(generator))
 
     def _calculateNormalisedWeight(self, stock: TradingAlgorithmStock) -> float:
-        max_value, min_value = self.calculateRawWeightMaxMin()
+        max_value, min_value = self._calculateRawWeightMaxMin()
         return ((stock.raw_weight - min_value) / (max_value - min_value)) + 1
 
     def _scalePrice(self, stock: TradingAlgorithmStock) -> float:
@@ -58,7 +58,7 @@ class TradingAlgorithm:
                 len(str(stock.new_price).split(".")[1]) for stock in self.stocks
             )
             self.scale: int = pow(10, max_digits)
-        return int(stock.current_price * self.scale)
+        return int(stock.new_price * self.scale)
 
     def getOptimalPortfolio(self, budget: float) -> Portfolio:
         scaled_budget: int = int(budget * self.scale)
@@ -79,10 +79,11 @@ class TradingAlgorithm:
         optimal_portfolio = Portfolio()
         remaining_scaled_budget = scaled_budget
         while remaining_scaled_budget >= 0 and chosen[remaining_scaled_budget] != -1:
-            stock_index = chosed[
+            stock_index = chosen[
                 remaining_scaled_budget
             ]  # TODO find out type of stock_index
-            optimal_portfolio.addStock(self.stocks[stock_index])
+            stock: TradingAlgorithmStock = self.stocks[stock_index]
+            optimal_portfolio.addStock(Stock(stock.ticker, stock.new_price))
             remaining_scaled_budget -= self.stocks[stock_index].scaled_price
 
         return optimal_portfolio

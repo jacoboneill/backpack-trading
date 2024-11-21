@@ -1,5 +1,5 @@
 from __future__ import annotations
-from Stock import Stock
+from stock import Stock
 
 
 class PortfolioStock(Stock):

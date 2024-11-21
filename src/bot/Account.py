@@ -1,6 +1,5 @@
-from Portfolio import Portfolio, PortfolioStock
-from TradingAlgorithm import TradingAlgorithm
-from Stock import Stock
+from portfolio import Portfolio, PortfolioStock
+from stock import Stock
 
 
 class InsufficientFundsError(Exception):
@@ -21,20 +20,16 @@ class Account:
                 f"budget percentage must be between 0 and one, {budget_percentage} was given."
             )
 
+        self.initial_balance: float = initial_balance
         self.balance: float = initial_balance
         self.budget_percentage: float = budget_percentage
         self.budget: float = self._calculateBudget()
         self.portfolio: Portfolio = Portfolio()
 
-    def update(self, new_stocks: Portfolio):
-        self._updateStockHistory(new_stocks)
-        optimal_portfolio: Portfolio = self._runAlgorithm()
-        self._rebalanceAccount(optimal_portfolio)
-
     def _calculateBudget(self) -> float:
         return self.balance * self.budget_percentage
 
-    def _updateStockHistory(self, new_stocks: Portfolio) -> None:
+    def updateStockHistory(self, new_stocks: Portfolio) -> tuple[Portfolio, Portfolio]:
         if not hasattr(self, "new_stocks"):
             self.old_stocks: Portfolio = new_stocks
         else:
@@ -42,31 +37,31 @@ class Account:
 
         self.new_stocks = new_stocks
 
-    def _runAlgorithm(self) -> Portfolio:
-        return TradingAlgorithm(self.old_stocks, self.new_stocks).getOptimalPortfolio()
+        return (self.old_stocks, self.new_stocks)
 
-    def _rebalanceAccount(self, portfolio_template: Portfolio) -> None:
+    def rebalanceAccount(self, portfolio_template: Portfolio) -> None:
+        portfolio: dict[str, PortfolioStock] = self.portfolio.stocks
         template: dict[str, PortfolioStock] = portfolio_template.stocks
         buy_queue: list = []
         sell_queue: list = []
 
-        for ticker, old_stock in self.portfolio.stocks.items():
-            template_stock = template.get(
-                ticker,
-                PortfolioStock(
-                    ticker,
-                ),
-            )
-            if ticker in template:
-                quantity: int = template[ticker].quantity - old_stock.quantity
-                stock: Stock = Stock(ticker, template[ticker].price)
+        for ticker, new_stock in template.items():
+            if ticker not in portfolio:
+                quantity: int = new_stock.quantity
+                stock: Stock = Stock(ticker, new_stock.price)
             else:
-                quantity: int = -old_stock.quantity
-                stock: Stock = Stock(ticker, old_stock.price)
+                quantity: int = template[ticker].quantity - portfolio[ticker].quantity
+                stock: Stock = Stock(ticker, new_stock.price)
 
             if quantity > 0:
                 buy_queue.append((stock, quantity))
             if quantity < 0:
+                sell_queue.append((stock, quantity))
+
+        for ticker, old_stock in portfolio.items():
+            if ticker not in template:
+                quantity: int = -old_stock.quantity
+                stock: Stock = Stock(ticker, old_stock.price)
                 sell_queue.append((stock, quantity))
 
         for stock, quantity in sell_queue:
@@ -87,7 +82,7 @@ class Account:
                 f"quantity must be above or equal to 1, {quantity} was given."
             )
 
-        request_price = self.portfolio.stocks[stock.ticker].price * quantity
+        request_price = stock.price * quantity
         if self.balance + request_price < 0:
             raise InsufficientFundsError(
                 f"Unable to complete transaction: {stock.ticker} x {quantity}. Insufficient funds."
