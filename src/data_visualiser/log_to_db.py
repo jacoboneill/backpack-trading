@@ -1,24 +1,35 @@
 from datetime import datetime
 import sqlite3
 
-conn = sqlite3.connect("./output.db")
-cur = conn.cursor()
+def databaseInit(filepath):
+    conn = sqlite3.connect("./output.db")
+    cur = conn.cursor()
 
-cur.execute("DROP TABLE IF EXISTS data;")
-cur.execute("""
-    CREATE TABLE data (
-        account_number REAL NOT NULL,
-        timestamp INTEGER NOT NULL,
-        balance REAL NOT NULL,
-        budget REAL NOT NULL,
-        portfolio REAL NOT NULL,
-        profit_loss REAL NOT NULL
-    );
-""")
+    cur.execute("DROP TABLE IF EXISTS data;")
+    cur.execute("""
+        CREATE TABLE data (
+            account_number REAL NOT NULL,
+            timestamp INTEGER NOT NULL,
+            balance REAL NOT NULL,
+            budget REAL NOT NULL,
+            portfolio REAL NOT NULL,
+            profit_loss REAL NOT NULL
+        );
+    """)
 
-with open("./poc.log", "r") as log_file:
-    lines = [l.strip() for l in log_file.readlines()]
+    return (conn, cur)
 
+
+if __name__ == "__main__":
+    # Create Database
+    conn, cur = databaseInit("./output.db")
+
+    # Load log into memory, easier than chunking
+    lines = []
+    with open("./poc.log", "r") as log_file:
+        lines = [l.strip() for l in log_file.readlines()]
+
+    # Increment through log, add to database
     while lines:
         timestamp = int(datetime.strptime(lines[0], "%d-%m-%Y").timestamp())
         for i in range(3):
