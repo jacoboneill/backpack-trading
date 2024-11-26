@@ -39,26 +39,15 @@ def parse_data(data, ticker):
 
     return result
 
-
-if __name__ == "__main__":
-    # Logging config
+def setupLogging():
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - [%(levelname)s] %(message)s",
         datefmt="%d-%m-%Y %H:%M:%S",
     )
 
-    # Scrape data from NASDAQ and parse
-    data = []
-    with open("./companies.csv", "r") as f:
-        for ticker in f.read().splitlines():
-            res = get(ticker)
-            if res != None:
-                for row in res:
-                    data.append(parse_data(row, ticker))
-
-    # Write to database
-    conn = sqlite3.connect("./historic_data.db")
+def databaseInit(filepath):
+    conn = sqlite3.connect(filepath)
     cur = conn.cursor()
     cur.execute("DROP TABLE IF EXISTS stocks;")
     cur.execute(
@@ -71,13 +60,35 @@ if __name__ == "__main__":
     );
     """
     )
+    return (conn, cur)
 
-    for entry in data:
-        cur.execute(
-            "INSERT INTO stocks (ticker, epoch, price) VALUES (:ticker, :epoch, :price)",
-            entry
-        )
+def databaseAppend(cur, entry):
+    cur.execute(
+        "INSERT INTO stocks (ticker, epoch, price) VALUES (:ticker, :epoch, :price)",
+        entry
+    )
 
+def databaseClose(conn, cur):
     conn.commit()
     cur.close()
     conn.close()
+
+if __name__ == "__main__":
+    # Scrape data from NASDAQ and parse
+    data = []
+    with open("./companies.csv", "r") as f:
+        for ticker in f.read().splitlines():
+            res = get(ticker)
+            if res != None:
+                for row in res:
+                    data.append(parse_data(row, ticker))
+
+    # Setup Database
+    conn, cur = databaseInit("./historic_data.db")
+
+    # Write data to Database
+    for entry in data:
+        databaseAppend(cur, entry)
+
+    # Close Database
+    databaseClose(conn, cur)
