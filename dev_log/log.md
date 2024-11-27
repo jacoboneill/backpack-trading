@@ -765,3 +765,7 @@ if __name__ == "__main__":
 ```
 
 I learnt a lot while making this, most notably however the `list.sort(key=)` keyword parameter, as well as `lambda` functions. This made it much easier to sort it all, instead of using the solutions way of using a set and memorising the way the set is laid out.
+
+# 27-11-2024 13:10
+
+Final update, I'll be honest I kind of ignored this and just got on with getting it to work. It was a wild learning curve for data analysis and, after looking at the results, the idea of the knapsack problem didn't really work, if anything I could've just done a greedy algorithm based on the weights which would've been a lot faster, but the experimentation, designing, and troubleshooting of the whole project was well worth it! _"So, what's the final result"_ you may be asking? I now have a simulator that I can run any trading algorithm class that I design and test it on historical data! If I was to continue on this project I would 100% design a nicer looking frontend for this to show live updates of the computation as it is going. Maybe one day, but for now, this is CS50X done!
