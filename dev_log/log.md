@@ -22,11 +22,11 @@ I have created a flowchart for the overall program as well as the setup function
 
 ### Overview
 
-![Overview](./README_assets/flowchart_overview.png)
+![Overview](./flowchart_overview.png)
 
 ### Setup
 
-![Setup](./README_assets/flowchart_setup.png)
+![Setup](./flowchart_setup.png)
 
 ## 10-10-2024 14:24
 
@@ -34,11 +34,11 @@ Created the flowchart for the main section, decided to further abstract it. I'm 
 
 ### Main
 
-![Main](./README_assets/flowchart_main.png)
+![Main](./flowchart_main.png)
 
 ### Update Stock Data and Weights
 
-![Update Stock Data and Weights](./README_assets/flowchart_update_stock_data_and_weights.png)
+![Update Stock Data and Weights](./flowchart_update_stock_data_and_weights.png)
 
 ## 10-10-2024 15:36
 
@@ -108,7 +108,7 @@ I have finally added the update_portfolio section to the flow chart. Now I need 
 
 ### Update Portfolio
 
-![Update Portfolio](./README_assets/flowchart_update_portfolio.png)
+![Update Portfolio](./flowchart_update_portfolio.png)
 
 ## 11-10-2024 11:21
 
@@ -246,9 +246,9 @@ SELECT * FROM table;
 ```
 
 - There is a NASDAQ API for getting historic data that I used the FireFox dev tools network tab to be able to get the URL
-![NASDAQ Network Tab](./README_assets/nasdaq_network_tab.png)
+![NASDAQ Network Tab](./nasdaq_network_tab.png)
 ---
-![NASDAQ API](./README_assets/nasdaq_api.png)
+![NASDAQ API](./nasdaq_api.png)
 
 - You can use `datetime` and `timedelta` to create a range for the dates, so that everything lines up when you export the dict to a csv
 
